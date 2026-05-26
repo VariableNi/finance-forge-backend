@@ -17,6 +17,11 @@ app = FastAPI(title="Кузница Финансов API")
 def read_root():
     return {"status": "success", "message": "Кузница работает, молот готов к бою!"}
 
+@app.get("/goals/") 
+def get_all_goals(db: Session = Depends(get_db)):
+    goals = db.query(models.Goal).all()
+    return goals
+
 # --- НАШ ПЕРВЫЙ РАБОЧИЙ ЭНДПОИНТ ---
 # Роут для создания новой финансовой цели (например, RTX 5060)
 @app.post("/goals/")
