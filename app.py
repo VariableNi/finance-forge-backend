@@ -1,11 +1,13 @@
 import customtkinter as ctk
 import requests
 from ProjectScreens import ProjectFrame
+from PIL import Image
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 API_URL = "http://127.0.0.1:8000"
+fone_img = Image.open("Fone.png")
 
 class Forge(ctk.CTk):
     def __init__(self):
@@ -14,17 +16,33 @@ class Forge(ctk.CTk):
         self.title("Forge")
         self.geometry("600x700")
         self.attributes("-alpha", 0.8)
+        self.configure(fg_color="#85DCB8")
         self.MIN_WIDTH = 70 
-        self.MAX_WIDTH = 200 
+        self.MAX_WIDTH = 120 
         self.current_width = self.MIN_WIDTH
         self.animation_id = None
         
         self.project_frame = ProjectFrame(master=self)
         
+        self.logo_image = ctk.CTkImage(
+            light_image=fone_img,  # Картинка для светлой темы
+            dark_image=fone_img,   # У нас фон прозрачный, так что одна картинка пойдет на обе темы
+            size=(200, 130)       # Размеры в пикселях (подгони под себя)
+        )
+
+        # 4. В CustomTkinter картинки отображаются внутри виджетов, чаще всего через CTkLabel
+        self.logo_label = ctk.CTkLabel(
+            master=self, 
+            image=self.logo_image,   # Передаем наш CTkImage
+            text=""            # Убираем стандартный текст, оставляем только графику
+        )
+        
+        self.logo_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+        
         # sidebar------------------------------------------------------------------------------------------
         
         # sidebar with button for open any frame 
-        self.sidebar = ctk.CTkFrame(self, width=self.current_width, corner_radius=0, fg_color="#45adff")
+        self.sidebar = ctk.CTkFrame(self, width=self.current_width, corner_radius=0, fg_color="#71bd9d")
         self.sidebar.pack(side="right", fill="y")
         self.sidebar.pack_propagate(False) 
         self.sidebar.bind("<Enter>", self.on_enter)
@@ -52,10 +70,25 @@ class Forge(ctk.CTk):
         # а не просто переключилась на кнопку внутри нее
         x, y = self.winfo_pointerxy()
         widget = self.winfo_containing(x, y)
-        if widget not in [self.sidebar, self.btn1, self.btn2]:
+        if widget not in [self.sidebar, self.project_frame_btn]:
             if self.animation_id:
                 self.after_cancel(self.animation_id)
             self.animate_collapse() 
+    
+    def animate_expand(self):
+        """Плавное открытие"""
+        if self.current_width < self.MAX_WIDTH:
+            self.current_width += 10  # Шаг анимации (скорость выдвижения)
+            self.sidebar.configure(width=self.current_width)
+            # Повторяем шаг через 5 миллисекунд
+            self.animation_id = self.after(5, self.animate_expand)
+
+    def animate_collapse(self):
+        """Плавное закрытие"""
+        if self.current_width > self.MIN_WIDTH:
+            self.current_width -= 10  # Шаг анимации
+            self.sidebar.configure(width=self.current_width)
+            self.animation_id = self.after(5, self.animate_collapse)
         
         
         # self.configure(fg_color="#0A0A0A")
