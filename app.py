@@ -8,6 +8,7 @@ ctk.set_default_color_theme("blue")
 
 API_URL = "http://127.0.0.1:8000"
 fone_img = Image.open("Fone.png")
+TRANS_COLOR = "#ff009d"
 
 class Forge(ctk.CTk):
     def __init__(self):
@@ -15,33 +16,41 @@ class Forge(ctk.CTk):
 
         self.title("Forge")
         self.geometry("600x700")
-        self.attributes("-alpha", 0.8)
-        self.configure(fg_color="#85DCB8")
+        self.wm_attributes('-transparentcolor', TRANS_COLOR)
+        self.configure(fg_color=TRANS_COLOR)
         self.MIN_WIDTH = 70 
-        self.MAX_WIDTH = 120 
+        self.MAX_WIDTH = 600
         self.current_width = self.MIN_WIDTH
         self.animation_id = None
         
-        self.project_frame = ProjectFrame(master=self)
-        
         self.logo_image = ctk.CTkImage(
-            light_image=fone_img,  # Картинка для светлой темы
-            dark_image=fone_img,   # У нас фон прозрачный, так что одна картинка пойдет на обе темы
-            size=(200, 130)       # Размеры в пикселях (подгони под себя)
+            light_image=fone_img,
+            dark_image=fone_img,   
+            size=(200, 130)  
         )
 
-        # 4. В CustomTkinter картинки отображаются внутри виджетов, чаще всего через CTkLabel
         self.logo_label = ctk.CTkLabel(
             master=self, 
-            image=self.logo_image,   # Передаем наш CTkImage
-            text=""            # Убираем стандартный текст, оставляем только графику
+            # image=self.logo_image,
+            text="品格",
+            text_color="#ffffff",
+            font=("Arial", 45),
+            bg_color=TRANS_COLOR
+            # fg_color="#71bd9d",
+            # # corner_radius=360,
+
+            # # width=300,
+            # # height=300
         )
         
         self.logo_label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+        self.project_frame = ProjectFrame(master=self)
         
         # sidebar------------------------------------------------------------------------------------------
         
         # sidebar with button for open any frame 
+        #"#71bd9d"
         self.sidebar = ctk.CTkFrame(self, width=self.current_width, corner_radius=0, fg_color="#71bd9d")
         self.sidebar.pack(side="right", fill="y")
         self.sidebar.pack_propagate(False) 
@@ -54,20 +63,17 @@ class Forge(ctk.CTk):
         
         #--------------------------------------------------------------------------------------------------
         
-        
     def open_project_frame(self):
          self.project_frame.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)  
     
     def on_enter(self, event):
         """Когда мышь зашла на панель"""
         if self.animation_id:
-            self.after_cancel(self.animation_id) # Останавливаем закрытие, если оно шло
+            self.after_cancel(self.animation_id)
         self.animate_expand()
 
     def on_leave(self, event):
         """Когда мышь ушла с панели"""
-        # Проверяем, что мышь действительно ушла СОВСЕМ за пределы панели, 
-        # а не просто переключилась на кнопку внутри нее
         x, y = self.winfo_pointerxy()
         widget = self.winfo_containing(x, y)
         if widget not in [self.sidebar, self.project_frame_btn]:
@@ -78,16 +84,17 @@ class Forge(ctk.CTk):
     def animate_expand(self):
         """Плавное открытие"""
         if self.current_width < self.MAX_WIDTH:
-            self.current_width += 10  # Шаг анимации (скорость выдвижения)
+            self.current_width += 10 
             self.sidebar.configure(width=self.current_width)
-            # Повторяем шаг через 5 миллисекунд
+            self.size(self.current_width, 700)
             self.animation_id = self.after(5, self.animate_expand)
 
     def animate_collapse(self):
         """Плавное закрытие"""
         if self.current_width > self.MIN_WIDTH:
-            self.current_width -= 10  # Шаг анимации
+            self.current_width -= 10 
             self.sidebar.configure(width=self.current_width)
+            self.size(self.current_width, 700)
             self.animation_id = self.after(5, self.animate_collapse)
         
         
